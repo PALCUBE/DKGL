@@ -210,11 +210,18 @@ namespace DKFoundation
 
 		DataUnitType dataUnits;
 
+		template <int Index> struct ItemAt
+		{
+			using ElementType = typename DKTypeList<Types...>::template TypeAt<Index>;
+			using TupleUnitType = DKTupleUnit<ElementType>;
+		};
+
 	public:
 		enum {Length = sizeof...(Types)};
 		using TypeList = DKTypeList<Types...>;
 
-		template <size_t Index> using TypeAt = typename TypeList::template TypeAt<Index>;
+		template <int Index> using TypeAt = typename ItemAt<Index>::ElementType;
+		template <int Index> using UnitTypeAt = typename ItemAt<Index>::TupleUnitType;
 
 		template <typename T> constexpr static auto IndexOf(void) -> int
 		{
@@ -226,22 +233,22 @@ namespace DKFoundation
 			return TypeList::template Count<T>::Value > 0;
 		};
 		
-		template <size_t Index> auto Unit(void) -> DKTupleUnit<TypeAt<Index>>&
+		template <size_t Index> auto Unit(void) -> UnitTypeAt<Index>&
 		{
 			static_assert(Index < sizeof...(Types), "Index must be lesser than type size");
 			return static_cast<DataUnitAtIndex<Index>&>(dataUnits).unit;
 		};
-		template <size_t Index> auto Unit(void) const -> const DKTupleUnit<TypeAt<Index>>&
+		template <size_t Index> auto Unit(void) const -> const UnitTypeAt<Index>&
 		{
 			static_assert(Index < sizeof...(Types), "Index must be lesser than type size");
 			return static_cast<const DataUnitAtIndex<Index>&>(dataUnits).unit;
 		};
-		template <size_t Index> auto Value(void) -> typename DKTupleUnit<TypeAt<Index>>::RefType
+		template <size_t Index> auto Value(void) -> typename UnitTypeAt<Index>::RefType
 		{
 			static_assert(Index < sizeof...(Types), "Index must be lesser than type size");
 			return Unit<Index>().Value();
 		};
-		template <size_t Index> auto Value(void) const -> typename DKTupleUnit<TypeAt<Index>>::CRefType
+		template <size_t Index> auto Value(void) const -> typename UnitTypeAt<Index>::CRefType
 		{
 			static_assert(Index < sizeof...(Types), "Index must be lesser than type size");
 			return Unit<Index>().Value();
